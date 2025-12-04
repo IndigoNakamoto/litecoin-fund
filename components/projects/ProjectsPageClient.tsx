@@ -191,8 +191,11 @@ export default function ProjectsPageClient({ projects }: ProjectsPageClientProps
 
   useEffect(() => {
     if (innerSpinnerRef.current) {
-      innerSpinnerRef.current.style.width = '80%'
-      innerSpinnerRef.current.style.height = '80%'
+      const element = innerSpinnerRef.current
+      element.style.width = '80%'
+      element.style.height = '80%'
+      // Preserve the centering transform with upward offset
+      element.style.transform = 'translate(-50%, calc(-50% - 0.5rem))'
     }
   }, [])
 
@@ -245,11 +248,11 @@ export default function ProjectsPageClient({ projects }: ProjectsPageClientProps
               <h1 className="font-space-grotesk text-[39px] font-semibold leading-[32px] tracking-tight text-black">
                 Litecoin Projects
               </h1>
-              <p className="w-11/12 pt-6 text-[18px]">
+              <p className="w-11/12 pt-6 text-[18px] text-black">
                 The Litecoin Foundation is dedicated to consistently improving
                 the Litecoin network, whilst supporting the development of
                 exciting projects on the Litecoin blockchain. Below are a
-                handful of initiatives that demonstrate Litecoin's commitment to
+                handful of initiatives that demonstrate Litecoin&apos;s commitment to
                 innovation and improving the experience of its users.
               </p>
               <div className="my-8 flex w-11/12 max-w-[508px] flex-col gap-4">
@@ -263,18 +266,18 @@ export default function ProjectsPageClient({ projects }: ProjectsPageClientProps
                   </Button>
                 </div>
 
-                <div className="flex w-full flex-row justify-center gap-2">
+                <div className="flex w-full flex-row justify-center gap-2 ">
                   <Button
                     variant="secondary"
                     onClick={scrollToProjects}
-                    className="w-full px-6 py-3"
+                    className="w-full px-6 py-3 text-black! rounded-2xl"
                   >
                     VIEW PROJECTS
                   </Button>
                   <Button
                     variant="secondary"
                     onClick={scrollToBounties}
-                    className="w-full px-6 py-3"
+                    className="w-full px-6 py-3 text-black! rounded-2xl"
                   >
                     VIEW PAST PROJECTS
                   </Button>
@@ -282,12 +285,13 @@ export default function ProjectsPageClient({ projects }: ProjectsPageClientProps
               </div>
             </div>
             <div className="w-7/12 pt-80 lg:w-1/2 lg:pb-0 lg:pl-20 lg:pt-0">
-              <div className="relative flex items-center justify-center">
+              <div className="relative flex min-h-[300px] items-center justify-center lg:min-h-[400px]">
                 <img
                   src="/static/images/design/outline-litecoin-spinner-inner.svg"
                   alt="Litecoin Spinner Inner"
                   ref={innerSpinnerRef}
-                  className="absolute w-1/2 max-w-[160px] pb-8 lg:max-w-[full]"
+                  className="absolute z-10 w-1/2 max-w-[160px] lg:max-w-[full]"
+                  style={{ top: '50%', left: '50%', transform: 'translate(-50%, calc(-50% - 0.5rem))' }}
                 />
                 <img
                   src="/static/images/design/outline-litecoin-spinner-outer.svg"
@@ -362,7 +366,7 @@ export default function ProjectsPageClient({ projects }: ProjectsPageClientProps
             <div className="text-gray-600 py-8 text-center">
               <p className="mb-2">No completed projects found.</p>
               <p className="text-sm">
-                Projects with status "Completed", "Closed", "Bounty Completed", or "Bounty Closed" will appear here.
+                Projects with status &quotCompleted&quot;, &quotClosed&quot, &quotBounty Completed&quot, or &quotBounty Closed&quot will appear here.
               </p>
             </div>
           )}

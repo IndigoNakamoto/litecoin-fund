@@ -21,7 +21,7 @@ const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    'cursor-pointer rounded-3xl text-center text-[14px] font-medium transition transform duration-200 ease-in-out flex items-center justify-center'
+    'cursor-pointer rounded-3xl! text-center text-[14px] font-medium transition transform duration-200 ease-in-out flex items-center justify-center'
 
   let variantStyles = ''
   switch (variant) {

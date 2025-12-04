@@ -8,7 +8,7 @@ interface Props {
 
 export default function SectionGrey({ children }: Props) {
   return (
-    <div className="bg-[#c6d3d6]">
+    <div className="bg-[#f0f0f0]">
       <div className="mx-auto w-full max-w-[1300px] p-8">{children}</div>
     </div>
   )

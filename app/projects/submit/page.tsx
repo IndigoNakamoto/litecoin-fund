@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function SubmitPage() {
   return (
     <ApplySection title="Submit a Project">
-      <div className="my-auto mt-10 max-w-2xl space-y-8 xs:my-4">
+      <div className="my-auto mt-10 max-w-2xl space-y-8 xs:my-4 text-black">
         <p>
           Have a project that can benefit the Litecoin community? Use the form
           below to submit your project for consideration. Once approved, your
@@ -20,29 +20,29 @@ export default function SubmitPage() {
         </p>
         <p>
           We will review the information you provide to ensure it aligns with
-          our goals and values. If your project is selected, we'll reach out
+          our goals and values. If your project is selected, we&apos;ll reach out
           with any additional details needed to finalize your listing. This
           may include providing Litecoin addresses or other payment details to
           facilitate donations.
         </p>
         {/* Donation Policy */}
         <div className="prose max-w-none rounded-xl bg-gray-100 p-6 dark:bg-gray-100">
-          <h2 className="text-xl font-bold">Donation Policies</h2>
-          <p>
+          <h2 className="text-xl font-semibold my-4 font-space-grotesk text-black">Donation Policies</h2>
+          <p className="text-black">
             The Litecoin Foundation is a registered non-profit organization
             dedicated to advancing Litecoin and blockchain technology through
             open-source development. Your work is vital to our mission.
           </p>
-          <h3 className="text-lg font-bold">Service Fee</h3>
-          <p>
+          <h3 className="text-lg font-semibold my-4 font-space-grotesk text-black">Service Fee</h3>
+          <p className="text-black">
             A 15% service fee is applied to each donation to cover operational
             costs, including administrative and marketing expenses that help
             us grow our impact.
           </p>
-          <h3 className="text-lg font-bold">Fund Allocation</h3>
-          <p>
-            While we always strive to honor the donor's intent, the Litecoin
-            Foundation's Open Source Fund Council reserves the right to
+          <h3 className="text-lg font-semibold my-4 font-space-grotesk text-black">Fund Allocation</h3>
+          <p className="text-black">
+            While we always strive to honor the donor&apos;s intent, the Litecoin
+            Foundation&apos;s Open Source Fund Council reserves the right to
             reallocate funds between supported projects as needed. This
             ensures we can adapt to changing priorities and support the
             ecosystem most effectively.

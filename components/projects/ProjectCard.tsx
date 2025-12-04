@@ -68,7 +68,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, bgColor }) => {
               LOADING &rarr;
             </span>
           ) : (
-            <span className="text-secondary-500 hover:text-secondary-600 text-[14px]">
+            <span className="text-secondary-500 text-black hover:text-secondary-600 text-[14px]">
               READ MORE &rarr;
             </span>
           )}
