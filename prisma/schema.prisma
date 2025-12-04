@@ -1,0 +1,105 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Project {
+  id                  String   @id // Webflow ID
+  name                String
+  slug                String   @unique
+  summary             String   @db.Text
+  content             String?  @db.Text
+  coverImage          String?
+  status              String
+  projectType         String?
+  hidden              Boolean  @default(false)
+  recurring           Boolean  @default(false)
+  totalPaid           Float    @default(0)
+  serviceFeesCollected Float   @default(0)
+  website             String?
+  github              String?
+  twitter             String?
+  discord             String?
+  telegram            String?
+  reddit              String?
+  facebook            String?
+  lastPublished       DateTime
+  lastUpdated         DateTime
+  createdOn           DateTime
+  cachedAt            DateTime @default(now())
+  
+  donations           DonationPledge[]
+  
+  @@index([slug])
+  @@index([status])
+  @@index([hidden])
+}
+
+model DonationPledge {
+  id                  String   @id @default(cuid())
+  organizationId      Int
+  projectSlug         String
+  project             Project? @relation(fields: [projectSlug], references: [slug])
+  pledgeCurrency      String
+  pledgeAmount        Float
+  receiptEmail        String
+  firstName           String
+  lastName            String
+  addressLine1        String
+  addressLine2        String?
+  country             String
+  state               String?
+  city                String
+  zipcode             String
+  taxReceipt          Boolean  @default(false)
+  isAnonymous         Boolean  @default(false)
+  joinMailingList      Boolean  @default(false)
+  socialX             String?
+  socialFacebook      String?
+  socialLinkedIn      String?
+  
+  // TGB response fields
+  pledgeId            String?  @unique // From TGB API
+  depositAddress      String?  // For crypto donations
+  donationUuid        String?  // For stock donations
+  donationType        String   // 'fiat' | 'crypto' | 'stock'
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  @@index([projectSlug])
+  @@index([pledgeId])
+  @@index([receiptEmail])
+  @@index([createdAt])
+}
+
+model CacheEntry {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @db.Text
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([key])
+  @@index([expiresAt])
+}
+
+model Token {
+  id           Int      @id @default(1) // Single record for TGB tokens
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  refreshedAt  DateTime @updatedAt
+  
+  @@map("token")
+}

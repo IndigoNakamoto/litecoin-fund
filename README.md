@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Litecoin Fund
 
-## Getting Started
+A clean, modern Next.js application for managing Litecoin open-source projects and donations.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Webflow Integration**: Fetch and display projects from Webflow CMS
+- **TGB (The Giving Block) Integration**: Handle fiat and crypto donations
+- **Project Pages**: Browse and view individual project details
+- **Donation Flow**: Complete donation process with TGB API
+
+## Project Structure
+
+```
+├── app/
+│   ├── api/
+│   │   ├── webflow/          # Webflow API routes
+│   │   ├── tgb/              # The Giving Block API routes
+│   │   └── cache/            # Cache management
+│   ├── projects/             # Project pages
+│   └── donate/               # Donation page
+├── services/
+│   ├── webflow/              # Webflow service layer
+│   └── tgb/                  # TGB service layer
+├── types/                     # TypeScript type definitions
+├── lib/                       # Shared libraries (KV, Prisma)
+└── utils/                     # Utility functions
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Install dependencies** (Note: Requires Node.js 20.19+ or 22.12+ for Prisma)
+   ```bash
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Fill in your credentials:
+   - Webflow API token and collection ID
+   - The Giving Block login credentials
+   - Vercel KV credentials
+   - Database URL (for Prisma)
 
-## Learn More
+3. **Set up Prisma** (after upgrading Node.js)
+   ```bash
+   npx prisma init
+   npx prisma generate
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+4. **Run the development server**
+   ```bash
+   npm run dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API Routes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Webflow
+- `GET /api/webflow/projects` - Get all published projects
+- `GET /api/webflow/projects/[slug]` - Get project by slug
 
-## Deploy on Vercel
+### The Giving Block
+- `POST /api/tgb/donations/fiat` - Create fiat donation pledge
+- `POST /api/tgb/donations/crypto` - Create crypto donation (deposit address)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Pages
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `/projects` - List all projects
+- `/projects/[slug]` - Individual project page
+- `/donate` - Donation form
+
+## Environment Variables
+
+See `.env.example` for all required environment variables.
+
+## Note on Node.js Version
+
+This project requires Node.js 20.19+ or 22.12+ for Prisma support. If you're on an older version, you can still develop the frontend and API routes, but Prisma functionality will be disabled until you upgrade.
