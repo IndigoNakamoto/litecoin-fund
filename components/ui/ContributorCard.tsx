@@ -8,9 +8,10 @@ import type { Contributor } from '@/types/project'
 
 export interface ContributorCardProps {
   contributor: Contributor
+  backgroundColor?: string
 }
 
-const ContributorCard: React.FC<ContributorCardProps> = ({ contributor }) => {
+const ContributorCard: React.FC<ContributorCardProps> = ({ contributor, backgroundColor = '!bg-[white]' }) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
@@ -80,7 +81,7 @@ const ContributorCard: React.FC<ContributorCardProps> = ({ contributor }) => {
   return (
     <>
       <button
-        className="contributor group w-full transform cursor-pointer border-none !bg-[white] !p-3 text-center transition-transform duration-300 focus:outline-none group-hover:scale-105"
+        className={`contributor group w-full transform cursor-pointer border-none ${backgroundColor} !p-3 text-center transition-transform duration-300 focus:outline-none group-hover:scale-105`}
         onClick={handleCardClick}
         tabIndex={0}
       >
