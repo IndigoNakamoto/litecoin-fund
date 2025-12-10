@@ -2,7 +2,7 @@ import Image from 'next/image'
 
 export default function Footer() {
   return (
-    <footer className="relative h-[600px] max-w-full bg-[#222222]">
+    <footer className="relative mt-auto flex flex-col max-w-full bg-[#222222]">
       {/* Full-width section with bg-[#222222] */}
       <div className="mx-auto w-[1300px] max-w-[90%] pb-60 pt-20">
         {/* background */}
@@ -130,10 +130,10 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="m-auto flex h-[52px] items-center bg-[black] bg-cover bg-center">
+      <div className="flex h-[52px] w-full items-center bg-black">
         {/* TODO: Link privacy and terms */}
         <div
-          className="mx-auto flex w-[1300px] max-w-[90%] items-center bg-black text-left text-[14px] text-[#767e7f]"
+          className="mx-auto flex w-[1300px] max-w-[90%] items-center text-left text-[14px] text-[#767e7f]"
           style={{
             fontFamily:
               'system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif',
@@ -148,7 +148,6 @@ export default function Footer() {
           >
             Privacy Policy
           </a>
-          <br />
         </div>
       </div>
     </footer>
