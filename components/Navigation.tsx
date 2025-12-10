@@ -3,8 +3,8 @@
 import siteMetadata from '@/data/siteMetadata'
 import Link from 'next/link'
 import React, { useState, useEffect, useRef } from 'react'
-import Image from 'next/image'
 import HorizontalSocialIcons from './HorizontalSocialIcons'
+import LitecoinLogo from '../public/static/litecoin_dark_logo.svg'
 
 const Navigation = () => {
   const [scrollPosition, setScrollPosition] = useState(0)
@@ -44,7 +44,7 @@ const Navigation = () => {
     }
   }, [])
 
-  const toggleDropdown = (menu: string) => {
+  const toggleDropdown = (menu) => {
     setDropdownOpen((prev) => ({
       useLitecoin: menu === 'useLitecoin' ? !prev.useLitecoin : false,
       theFoundation: menu === 'theFoundation' ? !prev.theFoundation : false,
@@ -52,17 +52,17 @@ const Navigation = () => {
     }))
   }
 
-  const toggleMobileDropdown = (menu: string) => {
+  const toggleMobileDropdown = (menu) => {
     setMobileDropdownOpen((prevState) => ({
       ...prevState,
-      [menu]: !prevState[menu as keyof typeof prevState], // Toggle the specific dropdown
+      [menu]: !prevState[menu], // Toggle the specific dropdown
     }))
   }
 
-  const handleClickOutside = (event: MouseEvent) => {
+  const handleClickOutside = (event) => {
     if (
       useLitecoinRef.current &&
-      !useLitecoinRef.current.contains(event.target as Node)
+      !useLitecoinRef.current.contains(event.target)
     ) {
       setDropdownOpen((prev) => ({
         ...prev,
@@ -71,7 +71,7 @@ const Navigation = () => {
     }
     if (
       theFoundationRef.current &&
-      !theFoundationRef.current.contains(event.target as Node)
+      !theFoundationRef.current.contains(event.target)
     ) {
       setDropdownOpen((prev) => ({
         ...prev,
@@ -79,7 +79,7 @@ const Navigation = () => {
       }))
     }
 
-    if (learnRef.current && !learnRef.current.contains(event.target as Node)) {
+    if (learnRef.current && !learnRef.current.contains(event.target)) {
       setDropdownOpen((prev) => ({
         ...prev,
         learn: false,
@@ -136,20 +136,19 @@ const Navigation = () => {
     12
   )
 
-  const interpolateColor = (startColor: string, endColor: string, factor: number) => {
+  const interpolateColor = (startColor, endColor, factor) => {
     const result = startColor
       .slice(1)
       .match(/.{2}/g)
-      ?.map((hex, i) => {
-        const endHex = endColor.slice(1).match(/.{2}/g)?.[i] || '00'
+      .map((hex, i) => {
         return Math.round(
           parseInt(hex, 16) * (1 - factor) +
-            parseInt(endHex, 16) * factor
+            parseInt(endColor.slice(1).match(/.{2}/g)[i], 16) * factor
         )
           .toString(16)
           .padStart(2, '0')
       })
-    return `#${result?.join('') || '000000'}`
+    return `#${result.join('')}`
   }
 
   const fontColor = interpolateColor('#222222', '#C6D3D6', bgOpacity)
@@ -173,7 +172,7 @@ const Navigation = () => {
           fontFamily:
             'system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif',
         }}
-        className="fixed left-0 right-0 top-0 z-20 flex items-center justify-between"
+        className="fixed left-0 right-0 top-0 z-40 flex items-center justify-between"
       >
         <div className="mx-auto flex h-full w-[1300px] max-w-[90%] items-center justify-between">
           <div className="relative flex h-full items-center pb-1">
@@ -182,23 +181,19 @@ const Navigation = () => {
               aria-label={siteMetadata.headerTitle}
             >
               <div
-                className={`relative ${isMobile ? 'ml-2' : 'ml-1'} mt-26`}
+                className={`relative ${isMobile ? 'ml-2' : 'ml-1'}  mt-[3px]`}
                 style={{
                   height: `${logoSize}px`,
                   width: `${logoSize}px`,
-                  transform: logoColor === '#ffffff' ? 'translateY(-6px)' : 'translateY(0)',
+                  transform: 'translateY(-0.5px)',
                   color: logoColor, // Set the color for the SVG
-                  transition: 'color 0.3s ease-in-out', // Smooth transition for color only
+                  transition: 'color 0.3s ease-in-out', // Smooth transition
                 }}
               >
-                <Image
-                  src="/static/litecoin_dark_logo.svg"
-                  alt="Litecoin Logo"
+                <LitecoinLogo
                   width={logoSize}
                   height={logoSize}
-                  style={{
-                    filter: logoColor === '#ffffff' ? 'brightness(0) invert(1)' : 'none',
-                  }}
+                  // If needed, pass additional props
                 />
               </div>
             </a>
@@ -209,11 +204,7 @@ const Navigation = () => {
               <div
                 className={`nav-toggle mt-[-10px] ${navShow ? 'open' : ''}`}
                 onClick={onToggleNav}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    onToggleNav()
-                  }
-                }}
+                onKeyPress={onToggleNav}
                 aria-label="menu"
                 role="button"
                 tabIndex={0}
@@ -239,7 +230,7 @@ const Navigation = () => {
                   ref={useLitecoinRef}
                 >
                   <button
-                    className="flex items-center tracking-[-0.01em]"
+                    className="flex items-center whitespace-nowrap tracking-[-0.01em]"
                     onClick={() => toggleDropdown('useLitecoin')}
                     aria-expanded={dropdownOpen.useLitecoin}
                     aria-haspopup="true"
@@ -252,8 +243,9 @@ const Navigation = () => {
                       style={{
                         transformOrigin: 'center',
                         transform: `translateX(-2px) ${
-                          dropdownOpen.useLitecoin ? 'rotate(180deg)' : 'rotate(0deg)'
+                          dropdownOpen.useLitecoin ? 'rotate(180deg)' : ''
                         }`,
+                        transition: 'transform 0ms',
                       }}
                       fill="none"
                       viewBox="0 0 24 24"
@@ -305,10 +297,11 @@ const Navigation = () => {
                   ref={learnRef}
                 >
                   <button
-                    className="flex items-center tracking-[-0.01em]"
+                    className="flex items-center whitespace-nowrap tracking-[-0.01em]"
                     onClick={() => toggleDropdown('learn')}
                     aria-expanded={dropdownOpen.learn}
                     aria-haspopup="true"
+                    ref={learnRef as React.RefObject<HTMLButtonElement>} // Updated
                     style={{ color: fontColor }}
                   >
                     Learn
@@ -318,8 +311,9 @@ const Navigation = () => {
                       style={{
                         transformOrigin: 'center',
                         transform: `translateX(-2px) ${
-                          dropdownOpen.learn ? 'rotate(180deg)' : 'rotate(0deg)'
+                          dropdownOpen.learn ? 'rotate(180deg)' : ''
                         }`,
+                        transition: 'transform 0ms',
                       }}
                       fill="none"
                       viewBox="0 0 24 24"
@@ -363,7 +357,7 @@ const Navigation = () => {
 
                 {/* Projects Menu Item */}
                 <li
-                  className="text-md mb-[.95rem] ml-[1rem] mt-[.85rem] font-[500]"
+                  className="text-md mb-[.95rem] ml-[1rem] mt-[.85rem] whitespace-nowrap font-[500]"
                   style={{
                     color: fontColor,
                     letterSpacing: '-0.2px',
@@ -380,7 +374,7 @@ const Navigation = () => {
                   ref={theFoundationRef}
                 >
                   <button
-                    className="flex items-center tracking-[-0.01em]"
+                    className="flex items-center whitespace-nowrap tracking-[-0.01em]"
                     onClick={() => toggleDropdown('theFoundation')}
                     aria-expanded={dropdownOpen.theFoundation}
                     aria-haspopup="true"
@@ -393,8 +387,9 @@ const Navigation = () => {
                       style={{
                         transformOrigin: 'center',
                         transform: `translateX(-2px) ${
-                          dropdownOpen.theFoundation ? 'rotate(180deg)' : 'rotate(0deg)'
+                          dropdownOpen.theFoundation ? 'rotate(180deg)' : ''
                         }`,
+                        transition: 'transform 0ms',
                       }}
                       fill="none"
                       viewBox="0 0 24 24"
@@ -447,7 +442,7 @@ const Navigation = () => {
                 {/* End of The Foundation Dropdown */}
 
                 <li
-                  className="text-md mb-[.95rem] ml-[.6rem] mt-[.85rem] font-[500]"
+                  className="text-md mb-[.95rem] ml-[.6rem] mt-[.85rem] whitespace-nowrap font-[500]"
                   style={{
                     color: fontColor,
                     letterSpacing: '-0.2px',
@@ -458,7 +453,7 @@ const Navigation = () => {
                   <a href="https://litecoin.com/news">News</a>
                 </li>
                 <li
-                  className="text-md mb-[.95rem] ml-[.8rem] mt-[.85rem] font-[500]"
+                  className="text-md mb-[.95rem] ml-[.8rem] mt-[.85rem] whitespace-nowrap font-[500]"
                   style={{
                     color: fontColor,
                     letterSpacing: '-0.2px',
@@ -469,7 +464,7 @@ const Navigation = () => {
                   <a href="https://litecoin.com/events">Events</a>
                 </li>
                 <li
-                  className="text-md mb-[.95rem] ml-[.8rem] mt-[.85rem] font-[500]"
+                  className="text-md mb-[.95rem] ml-[.8rem] mt-[.85rem] whitespace-nowrap font-[500]"
                   style={{
                     color: fontColor,
                     letterSpacing: '-0.2px',
@@ -480,7 +475,7 @@ const Navigation = () => {
                   <a href="https://shop.litecoin.com">Shop</a>
                 </li>
                 <li
-                  className="text-md mb-[.95rem] ml-[.8rem] mt-[.85rem] font-[500]"
+                  className="text-md mb-[.95rem] ml-[.8rem] mt-[.85rem] whitespace-nowrap font-[500]"
                   style={{
                     color: fontColor,
                     letterSpacing: '-0.2px',
@@ -504,7 +499,7 @@ const Navigation = () => {
 
       {/* Mobile Nav with dynamic background color */}
       <div
-        className={`fixed bottom-0 right-0 top-0 z-10 min-w-full transform pt-20 duration-300 ease-in md:clear-left ${
+        className={`fixed bottom-0 right-0 top-0 z-30 min-w-full transform pt-20 duration-300 ease-in md:clear-left ${
           navShow ? 'translate-x-0' : 'translate-x-[105%]'
         }`}
         style={{
@@ -519,7 +514,7 @@ const Navigation = () => {
               { title: 'Learn', dropdown: true },
               {
                 title: 'Projects',
-                link: '/projects',
+                link: 'https://litecoin.com/projects',
               },
               { title: 'The Foundation', dropdown: true },
               { title: 'News', link: 'https://litecoin.com/news' },
@@ -529,30 +524,31 @@ const Navigation = () => {
             ].map((item) => {
               const itemKey = item.title.replace(' ', '').toLowerCase()
               return (
-                <div key={item.title} className="px-10 py-2 short:py-0.5">
+                <div key={item.title} className="px-8 py-2 short:py-0.5">
                   {item.dropdown ? (
                     <>
                       <button
                         onClick={() => toggleMobileDropdown(itemKey)}
-                        className="m-0 flex w-full items-center justify-between pl-0 pr-0 text-left font-space-grotesk text-[2.1rem] font-semibold"
+                        className="m-0 flex w-full items-center justify-between px-10 text-left font-space-grotesk text-[2.1rem] font-semibold"
                         style={{ color: mobileMenuTextColor }}
-                        aria-expanded={mobileDropdownOpen[itemKey as keyof typeof mobileDropdownOpen]}
+                        aria-expanded={mobileDropdownOpen[itemKey]}
                         aria-haspopup="true"
                       >
                         {item.title}
                         {/* Mobile SVG chevron will now flip up and down */}
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          className="h-10 w-10 transition-transform duration-200"
+                          className="h-10 w-10"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
                           style={{
                             transform: `translateY(-0.5px) ${
-                              mobileDropdownOpen[itemKey as keyof typeof mobileDropdownOpen]
+                              mobileDropdownOpen[itemKey]
                                 ? 'rotate(180deg)'
                                 : ''
                             }`,
+                            transition: 'transform 0ms',
                           }}
                         >
                           <path
@@ -563,9 +559,9 @@ const Navigation = () => {
                           />
                         </svg>
                       </button>
-                      {mobileDropdownOpen[itemKey as keyof typeof mobileDropdownOpen] ? (
+                      {mobileDropdownOpen[itemKey] ? (
                         <ul
-                          className={`pl-6 font-space-grotesk text-[2.1rem] font-semibold`}
+                          className={`pl-10 font-space-grotesk text-[2.1rem] font-semibold`}
                           style={{ color: mobileMenuTextColor }}
                         >
                           {/* Menu items based on `item.title` */}
@@ -624,18 +620,10 @@ const Navigation = () => {
                         </ul>
                       ) : null}
                     </>
-                  ) : item.link?.startsWith('/') ? (
-                    <Link
-                      href={item.link}
-                      className="flex w-full items-center justify-between text-left font-space-grotesk text-[2.1rem] font-semibold"
-                      style={{ color: mobileMenuTextColor }}
-                    >
-                      {item.title}
-                    </Link>
                   ) : (
                     <a
-                      href={item.link || '#'}
-                      className="flex w-full items-center justify-between text-left font-space-grotesk text-[2.1rem] font-semibold"
+                      href={item.link}
+                      className="flex w-full items-center justify-between px-4 text-left font-space-grotesk text-[2.1rem] font-semibold"
                       style={{ color: mobileMenuTextColor }}
                     >
                       {item.title}
@@ -715,9 +703,9 @@ const Navigation = () => {
           visibility: hidden;
         }
 
-        /* Instant flip for SVG chevron rotation */
+        /* Ensure instant flip for SVG icons */
         svg {
-          transition: transform 0ms;
+          transition: transform 0ms !important; /* Instant rotation with no animation */
         }
 
         /* Additional styles for alignment adjustments */
