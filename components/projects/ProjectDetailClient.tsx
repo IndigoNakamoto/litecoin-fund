@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import ProjectHeader from './ProjectHeader'
 import ProjectMenu from './ProjectMenu'
 import MenuSections from './MenuSections'
@@ -10,6 +11,17 @@ import { Project } from '@/types/project'
 import { AddressStats, BountyStatus } from '@/utils/types'
 import { defaultAddressStats } from '@/utils/defaultValues'
 import { determineBountyStatus } from '@/utils/statusHelpers'
+import { useDonation } from '@/contexts/DonationContext'
+
+// Dynamically import PaymentModal to avoid SSR issues
+const PaymentModal = dynamic(() => import('../payment/PaymentModal'), {
+  ssr: false,
+})
+
+// Dynamically import ThankYouModal to avoid SSR issues
+const ThankYouModal = dynamic(() => import('../payment/ThankYouModal'), {
+  ssr: false,
+})
 
 type ProjectDetailClientProps = {
   project: Project
@@ -27,8 +39,15 @@ export default function ProjectDetailClient({
   posts = [],
 }: ProjectDetailClientProps) {
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const { dispatch } = useDonation()
   const [selectedMenuItem, setSelectedMenuItem] = useState<string>('Info')
   const [selectedUpdateId, setSelectedUpdateId] = useState<number | null>(null)
+  
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false)
+  const [isThankYouModalOpen, setThankYouModalOpen] = useState(false)
+  const [selectedProject, setSelectedProject] = useState<Project | undefined>()
 
   // Handle URL query parameters for updates
   useEffect(() => {
@@ -79,9 +98,67 @@ export default function ProjectDetailClient({
 
   const bountyStatus = determineBountyStatus(project.status)
 
+  // Handle modal opening based on query parameters
+  useEffect(() => {
+    const modal = searchParams.get('modal')
+    const thankyou = searchParams.get('thankyou')
+    
+    if (modal === 'true') {
+      setModalOpen(true)
+      setSelectedProject(project)
+      dispatch({
+        type: 'SET_PROJECT_DETAILS',
+        payload: {
+          slug: project.slug,
+          title: project.name,
+          image: project.coverImage || '',
+        },
+      })
+    } else {
+      setModalOpen(false)
+    }
+
+    if (thankyou === 'true') {
+      setThankYouModalOpen(true)
+      setSelectedProject(project)
+    }
+  }, [searchParams, project, dispatch])
+
   const openPaymentModal = () => {
-    // TODO: Implement payment modal
-    console.log('Open payment modal for', project.slug)
+    setSelectedProject(project)
+    setModalOpen(true)
+
+    dispatch({
+      type: 'SET_PROJECT_DETAILS',
+      payload: {
+        slug: project.slug,
+        title: project.name,
+        image: project.coverImage || '',
+      },
+    })
+
+    // Update URL with modal parameter
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('modal', 'true')
+    router.push(`/projects/${project.slug}?${params.toString()}`, { scroll: false })
+  }
+
+  const closeModal = () => {
+    setModalOpen(false)
+    setThankYouModalOpen(false)
+    
+    // Remove query parameters related to modal
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('modal')
+    params.delete('thankyou')
+    params.delete('name')
+    
+    const newQuery = params.toString()
+    const newUrl = newQuery 
+      ? `/projects/${project.slug}?${newQuery}`
+      : `/projects/${project.slug}`
+    
+    router.push(newUrl, { scroll: false })
   }
 
   return (
@@ -153,6 +230,18 @@ export default function ProjectDetailClient({
           openPaymentModal={openPaymentModal}
         />
       </article>
+
+      {/* Modals */}
+      <PaymentModal
+        isOpen={modalOpen}
+        onRequestClose={closeModal}
+        project={selectedProject}
+      />
+      <ThankYouModal
+        isOpen={isThankYouModalOpen}
+        onRequestClose={closeModal}
+        project={selectedProject}
+      />
     </div>
   )
 }
