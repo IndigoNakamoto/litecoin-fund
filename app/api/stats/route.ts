@@ -321,24 +321,34 @@ export async function GET(request: NextRequest) {
       }
 
       if (donationsRaised === 0) {
-        const raised = await prisma.donationPledge.aggregate({
-          _sum: { pledgeAmount: true },
-          where: {
-            // The UI formats USD; without an exchange-rate table we can only
-            // safely sum USD-denominated pledges here. We also include fiat
-            // pledges defensively in case the currency casing/format varies.
-            OR: [
-              { pledgeCurrency: { equals: 'USD', mode: 'insensitive' } },
-              { donationType: 'fiat' },
-            ],
-            // If pledgeId is present, it generally indicates a processed pledge
-            // (fiat). Leaving it optional keeps behavior permissive.
-          },
-        })
-        donationsRaised = raised._sum.pledgeAmount ?? 0
-        if (debugInfo) {
-          debugInfo.donationPledge = { sum: donationsRaised }
-          debugInfo.used = 'prisma:donationPledge'
+        try {
+          const raised = await prisma.donationPledge.aggregate({
+            _sum: { pledgeAmount: true },
+            where: {
+              // The UI formats USD; without an exchange-rate table we can only
+              // safely sum USD-denominated pledges here. We also include fiat
+              // pledges defensively in case the currency casing/format varies.
+              OR: [
+                { pledgeCurrency: { equals: 'USD', mode: 'insensitive' } },
+                { donationType: 'fiat' },
+              ],
+              // If pledgeId is present, it generally indicates a processed pledge
+              // (fiat). Leaving it optional keeps behavior permissive.
+            },
+          })
+          donationsRaised = raised._sum.pledgeAmount ?? 0
+          if (debugInfo) {
+            debugInfo.donationPledge = { sum: donationsRaised }
+            debugInfo.used = 'prisma:donationPledge'
+          }
+        } catch (e: any) {
+          // Old live DB may not have DonationPledge; ignore.
+          if (debugInfo) {
+            ;(debugInfo.errors as unknown[]).push({
+              where: 'prisma:donationPledge.aggregate',
+              message: e instanceof Error ? e.message : String(e),
+            })
+          }
         }
       }
 

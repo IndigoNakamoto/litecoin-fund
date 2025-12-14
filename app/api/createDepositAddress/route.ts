@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createTGBClient } from '@/services/tgb/client'
+import Decimal from 'decimal.js'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
@@ -54,13 +56,38 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate pledgeAmount
-    const parsedPledgeAmount = parseFloat(pledgeAmount)
-    if (isNaN(parsedPledgeAmount) || parsedPledgeAmount <= 0) {
+    let parsedPledgeAmount: Decimal
+    try {
+      parsedPledgeAmount = new Decimal(pledgeAmount)
+      if (parsedPledgeAmount.lte(0)) {
+        throw new Error('Pledge amount must be greater than zero.')
+      }
+    } catch (e: any) {
       return NextResponse.json(
-        { error: 'Pledge amount must be greater than zero.' },
+        { error: e?.message || 'Pledge amount must be greater than zero.' },
         { status: 400 }
       )
     }
+
+    // Parity with old project: create Donation record first (without pledgeId)
+    const donation = await prisma.donation.create({
+      data: {
+        projectSlug,
+        organizationId,
+        donationType: 'crypto',
+        assetSymbol: pledgeCurrency,
+        pledgeAmount: parsedPledgeAmount,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        donorEmail: receiptEmail || null,
+        isAnonymous: isAnonymous || false,
+        taxReceipt: taxReceipt || false,
+        joinMailingList: joinMailingList || false,
+        socialX: socialX || null,
+        socialFacebook: socialFacebook || null,
+        socialLinkedIn: socialLinkedIn || null,
+      },
+    })
 
     const client = await createTGBClient()
 
@@ -103,6 +130,15 @@ export async function POST(request: NextRequest) {
     }
 
     const { depositAddress, pledgeId, qrCode } = response.data.data
+
+    // Parity with old project: update Donation with pledgeId and depositAddress
+    await prisma.donation.update({
+      where: { id: donation.id },
+      data: {
+        pledgeId,
+        depositAddress,
+      },
+    })
 
     return NextResponse.json({ depositAddress, pledgeId, qrCode })
   } catch (error: any) {

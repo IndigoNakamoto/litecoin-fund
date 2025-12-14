@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createTGBClient } from '@/services/tgb/client'
+import Decimal from 'decimal.js'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,14 +54,40 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // pledgeAmount is stock quantity; must be a positive integer-ish
-    const parsedPledgeAmount = Number(pledgeAmount)
-    if (!Number.isFinite(parsedPledgeAmount) || parsedPledgeAmount <= 0) {
+    // pledgeAmount is stock quantity; must be positive
+    let parsedPledgeAmount: Decimal
+    try {
+      parsedPledgeAmount = new Decimal(pledgeAmount)
+      if (parsedPledgeAmount.lte(0)) {
+        throw new Error('Pledge amount must be greater than zero.')
+      }
+    } catch (e: any) {
       return NextResponse.json(
-        { error: 'Pledge amount must be greater than zero.' },
+        { error: e?.message || 'Pledge amount must be greater than zero.' },
         { status: 400 }
       )
     }
+
+    // Parity with old project: create Donation record first (without donationUuid)
+    const donation = await prisma.donation.create({
+      data: {
+        projectSlug,
+        organizationId,
+        donationType: 'stock',
+        assetSymbol,
+        assetDescription,
+        pledgeAmount: parsedPledgeAmount,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        donorEmail: receiptEmail || null,
+        taxReceipt: true,
+        isAnonymous: false,
+        joinMailingList: joinMailingList || false,
+        socialX: socialX || null,
+        socialFacebook: socialFacebook || null,
+        socialLinkedIn: socialLinkedIn || null,
+      },
+    })
 
     const client = await createTGBClient()
 
@@ -67,7 +95,7 @@ export async function POST(request: NextRequest) {
       organizationId: String(organizationId),
       assetSymbol,
       assetDescription,
-      pledgeAmount: String(pledgeAmount),
+      pledgeAmount: parsedPledgeAmount.toString(),
       receiptEmail,
       firstName,
       lastName,
@@ -91,7 +119,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Include extra fields in response for potential client usage/debugging
+    // Parity with old project: update Donation with donationUuid
+    await prisma.donation.update({
+      where: { id: donation.id },
+      data: { donationUuid },
+    })
+
     return NextResponse.json({ donationUuid })
   } catch (error: any) {
     console.error('Error creating stock donation pledge:', error)

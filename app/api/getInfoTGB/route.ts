@@ -68,18 +68,26 @@ export async function GET(request: NextRequest) {
       // Donation model doesn't exist, fall back to DonationPledge
     }
 
-    // If no processed donations found, use DonationPledge but only USD/fiat
+    // If no processed donations found, fall back to DonationPledge (only if that table exists).
     if (donations.length === 0) {
-      const pledges = await prisma.donationPledge.findMany({
-        where: {
-          projectSlug: slug,
-          // Only sum USD-denominated pledges or fiat donations (which are typically USD)
-          OR: [
-            { pledgeCurrency: { equals: 'USD', mode: 'insensitive' } },
-            { donationType: 'fiat' },
-          ],
-        },
-      })
+      let pledges: any[] = []
+      try {
+        pledges = await prisma.donationPledge.findMany({
+          where: {
+            projectSlug: slug,
+            // Only sum USD-denominated pledges or fiat donations (which are typically USD)
+            OR: [
+              { pledgeCurrency: { equals: 'USD', mode: 'insensitive' } },
+              { donationType: 'fiat' },
+            ],
+          },
+        })
+      } catch (e: any) {
+        // Old live DB may not have DonationPledge; treat as no donations.
+        if (e?.code !== 'P2021') {
+          throw e
+        }
+      }
 
       if (!pledges || pledges.length === 0) {
         return NextResponse.json(

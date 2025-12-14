@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import Decimal from 'decimal.js'
+import { prisma } from '@/lib/prisma'
 import { createTGBClient } from '@/services/tgb/client'
 
 export async function POST(request: NextRequest) {
@@ -53,13 +55,38 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate pledgeAmount
-    const parsedPledgeAmount = parseFloat(pledgeAmount)
-    if (isNaN(parsedPledgeAmount) || parsedPledgeAmount <= 0) {
+    let parsedPledgeAmount: Decimal
+    try {
+      parsedPledgeAmount = new Decimal(pledgeAmount)
+      if (parsedPledgeAmount.lte(0)) {
+        throw new Error('Pledge amount must be greater than zero.')
+      }
+    } catch (e: any) {
       return NextResponse.json(
-        { error: 'Pledge amount must be greater than zero.' },
+        { error: e?.message || 'Pledge amount must be greater than zero.' },
         { status: 400 }
       )
     }
+
+    // Parity with old project: create Donation record first (without pledgeId)
+    const donation = await prisma.donation.create({
+      data: {
+        projectSlug,
+        organizationId,
+        donationType: 'fiat',
+        assetSymbol: pledgeCurrency,
+        pledgeAmount: parsedPledgeAmount,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        donorEmail: receiptEmail || null,
+        isAnonymous: isAnonymous || false,
+        taxReceipt: taxReceipt || false,
+        joinMailingList: joinMailingList || false,
+        socialX: socialX || null,
+        socialFacebook: socialFacebook || null,
+        socialLinkedIn: socialLinkedIn || null,
+      },
+    })
 
     const client = await createTGBClient()
 
@@ -95,6 +122,12 @@ export async function POST(request: NextRequest) {
     }
 
     const { pledgeId } = response.data.data
+
+    // Parity with old project: update Donation with returned pledgeId
+    await prisma.donation.update({
+      where: { id: donation.id },
+      data: { pledgeId },
+    })
 
     return NextResponse.json({ pledgeId })
   } catch (error: any) {

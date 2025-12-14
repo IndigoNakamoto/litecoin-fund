@@ -74,7 +74,21 @@ A clean, modern Next.js application for managing Litecoin open-source projects a
 
 ## Environment Variables
 
-See `.env.example` for all required environment variables.
+This app expects env vars compatible with the **existing (legacy) production DB** and TGB.
+
+- **Database**
+  - **`DATABASE_URL`**: must point at the *existing live DB* (same one used by the old project).
+    - The current Prisma client (`litecoin-fund/lib/prisma.ts`) reads **only** `DATABASE_URL`.
+    - Do **not** run `prisma migrate` against the live DB.
+
+- **The Giving Block**
+  - **`GIVING_BLOCK_LOGIN`**
+  - **`GIVING_BLOCK_PASSWORD`**
+
+- **Schema expectations (legacy parity)**
+  - Token caching uses the legacy **`tokens`** table with columns:
+    - `access_token`, `refresh_token`, `expires_at`, `refreshed_at`
+  - Donation persistence uses the legacy **`donations`** table (and `webhook_events` when webhook parity is implemented).
 
 ## Note on Node.js Version
 
